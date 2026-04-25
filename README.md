@@ -21,6 +21,10 @@ I was responsible for implementing the logging interface and statistics view bas
 - React Native
 - TypeScript
 
+## Run Locally
+- npm install
+- npx expo start
+
 ## 💡 What I Focused On
 - Implementing user flows based on predefined UI
 - Structuring and managing state for daily records
