@@ -21,21 +21,27 @@ export default function ChartScreen() {
   const [weeklyDate, setWeeklyDate] = useState(new Date().toISOString().split('T')[0]);   // 통계 기준 날짜
   const [weeklyStart, setWeeklyStart] = useState(startOfWeek(weeklyDate, { weekStartsOn: 1 })); // 주간 시작일
   const [weeklyEnd, setWeeklyEnd] = useState(endOfWeek(weeklyDate, { weekStartsOn: 1 }));       // 주간 종료일
-  const [weeklyRecordData, setWeeklyRecordData] = useState<DayRecord[]>([]);
-  const [weeklyCount, setWeeklyCount] = useState<number>(0);
-  const [weeklyMoodChartData, setWeeklyMoodChartData] = useState<number[]>([]);
-  const [weeklyEnergyChartData, setWeeklyEnergyChartData] = useState<number[]>([]);
+  const [weeklyRecordData, setWeeklyRecordData] = useState<DayRecord[]>([]); // 주간 기록 데이터
+  const [weeklyCount, setWeeklyCount] = useState<number>(0); // 주간 기록 개수
+  const [weeklyMoodChartData, setWeeklyMoodChartData] = useState<number[]>([]); // 주간 평균 감정 기록 데이터 (배열 길이가 주간 개수만큼 == 7)
+  const [weeklyEnergyChartData, setWeeklyEnergyChartData] = useState<number[]>([]); // 주간 평균 에너지 기록 데이터 (배열 길이가 주간 개수만큼 == 7)
+  const [weeklyAvgMood, setWeeklyAvgMood] = useState<number>(0); // 주간 평균 감정 기록
+  const [weeklyAvgEnergy, setWeeklyAvgEnergy] = useState<number>(0); // 주간 평균 에너지 기록
+
 
   const [monthlyDate, setmonthlyDate] = useState(new Date().toISOString().split('T')[0]);   // 통계 기준 날짜
   const [monthlyStart, setMonthlyStart] = useState(startOfMonth(monthlyDate));                   // 월간 시작일
   const [monthlyEnd, setMonthlyEnd] = useState(endOfMonth(monthlyDate));                         // 월간 종료일
-  const [monthlyRecordData, setMonthlyRecordData] = useState<DayRecord[]>([]);
-  const [monthlyCount, setMonthlyCount] = useState<number>(0);
-  const [numMonthly, setNumMonthly] = useState<number>(31);
-  const [monthlyMoodChartData, setMonthlyMoodChartData] = useState<number[]>([]);
-  const [monthlyEnergyChartData, setMonthlyEnergyChartData] = useState<number[]>([]);
+  const [monthlyRecordData, setMonthlyRecordData] = useState<DayRecord[]>([]); // 월간 기록 데이터
+  const [monthlyCount, setMonthlyCount] = useState<number>(0); // 월간 기록 개수
+  const [numMonthly, setNumMonthly] = useState<number>(31); // 월간 날짜 개수
+  const [monthlyMoodChartData, setMonthlyMoodChartData] = useState<number[]>([]); // 월간 평균 감정 기록 데이터 (배열 길이가 주간 개수만큼)
+  const [monthlyEnergyChartData, setMonthlyEnergyChartData] = useState<number[]>([]); // 월간 평균 에너지 기록 데이터 (배열 길이가 주간 개수만큼)
+  const [monthlyAvgMood, setMonthlyAvgMood] = useState<number>(0); // 월간 평균 감정 기록
+  const [monthlyAvgEnergy, setMonthlyAvgEnergy] = useState<number>(0); // 월간 평균 에너지 기록
 
 
+  //월간 차트 데이터 불러오기
   useFocusEffect(
     useCallback(() => {
       const loadData = async () => {
@@ -43,52 +49,86 @@ export default function ChartScreen() {
         let targetDates: string[] = [];
         const data = await getDurationDayRecords(monthlyStart.toISOString().split('T')[0], monthlyEnd.toISOString().split('T')[0]);
 
+
+        //월간 시작일 부터 종료일까지 날짜 배열 생성
         let daysInMonth = monthlyStart;
         while (daysInMonth <= monthlyEnd) {
           targetDates.push(daysInMonth.toISOString().split('T')[0]);
           daysInMonth = addDays(daysInMonth, 1);
         }
 
+        //DB에서 가져온 데이터를 날짜 배열에 맞게 채우기.
+        //날짜가 없으면 빈 DayRecord 객체를 반환.
         const fillData = targetDates.map(date => {
           const found = data.find(record => record.date === date);
           return found || new DayRecord(-1, date, 0, 0, "00:00", "00:00", "", 0, 0, 0, 0);
         })
 
         setMonthlyRecordData(fillData);
-        setMonthlyCount(data.length);
+        //데이터의 개수 == 기록한 횟수
+        setMonthlyCount(data.filter(r => r.mood > 0 || r.energy > 0).length);
         setNumMonthly(targetDates.length);
 
+        //이번달 데이터를 주간 데이터로 변환.
         let tempWeeklyMoodData: number[] = [];
         let tempWeeklyEnergyData: number[] = [];
         let tempWeeklyStart = startOfWeek(monthlyStart, { weekStartsOn: 1 });
         let tempWeeklyEnd = endOfWeek(monthlyStart, { weekStartsOn: 1 });
+
+        //월간 평균 감정 기록 계산.
+        let monthlySumMood: number = 0;
+        let monthlySumEnergy: number = 0;
+        let monthlyAvgMood: number = 0;
+        let monthlyAvgEnergy: number = 0;
+
+        //월간 데이터를 주간 단위로 자르기.
+        //주간 시작일 <= 월간 종료일 or 주간 종료일 >= 월간 시작일 일 때 반복.
+        //이 조건은 월간 마지막 주에 포함되어야 함.(월간 마지막 주의 주간 종료일이 월간 마지막 날짜보다 클 수 있기 때문)
         while (isSameMonth(tempWeeklyEnd, monthlyEnd) || isSameMonth(tempWeeklyStart, monthlyStart)) {
-          let count, sumMood, sumEnergy, AvgMood, AvgEnergy;
-          sumMood = 0;
-          sumEnergy = 0;
-          count = 0
-          AvgMood = 0;
-          AvgEnergy = 0;
+          //각 주간의 평균 감정 기록 계산.
+          let count: number = 0;
+          let sumMood: number = 0;
+          let sumEnergy: number = 0;
+          let AvgMood: number = 0;
+          let AvgEnergy: number = 0;
+
+          //주간 범위 내의 날짜를 반복하면서 평균 계산.
           for (let date = tempWeeklyStart; date <= tempWeeklyEnd; date = addDays(date, 1)) {
             const found = data.find(record => record.date === date.toISOString().split('T')[0]);
-            if (found) {
+            if (found && (found.mood > 0 || found.energy > 0)) {
               sumMood += found.mood;
               sumEnergy += found.energy;
+              monthlySumMood += found.mood;
+              monthlySumEnergy += found.energy;
               count += 1;
             }
           }
+          //평균 계산
           if (count > 0) {
             AvgMood = sumMood / count;
             AvgEnergy = sumEnergy / count;
           }
+          //데이터 저장
           tempWeeklyMoodData.push(AvgMood);
           tempWeeklyEnergyData.push(AvgEnergy);
 
+          //다음 주 기간으로 설정
           tempWeeklyStart = addDays(tempWeeklyStart, 7);
           tempWeeklyEnd = addDays(tempWeeklyEnd, 7);
 
         }
 
+        //월간 평균 계산
+        if (monthlyCount > 0) {
+          monthlyAvgMood = monthlySumMood / monthlyCount;
+          monthlyAvgEnergy = monthlySumEnergy / monthlyCount;
+        }
+
+        // 이번달 평균 감정 기록 저장.
+        setMonthlyAvgMood(monthlyAvgMood);
+        setMonthlyAvgEnergy(monthlyAvgEnergy);
+
+        //주간 평균 데이터 저장
         setMonthlyMoodChartData(tempWeeklyMoodData);
         setMonthlyEnergyChartData(tempWeeklyEnergyData);
 
@@ -97,24 +137,53 @@ export default function ChartScreen() {
     }, [monthlyStart])
   );
 
+
+  //주간 차트 데이터 불러오기
   useFocusEffect(
     useCallback(() => {
 
       const loadData = async () => {
 
+        //DB에서 이번주 데이터 불러오기.
         const data = await getDurationDayRecords(weeklyStart.toISOString().split('T')[0], weeklyEnd.toISOString().split('T')[0]);
+
+        //이번주 날짜 배열 생성.
         let targetDates: string[] = [];
-        for (let i = 1; i <= 7; i++) {
+        for (let i = 0; i < 7; i++) {
           targetDates.push(addDays(weeklyStart, i).toISOString().split('T')[0]);
         }
 
+        //이번주 데이터 저장
         const fillData = targetDates.map(date => {
           const found = data.find(record => record.date === date);
-          return found || new DayRecord(-1,date, 0, 0, "00:00", "00:00", "", 0, 0, 0, 0);
+          return found || new DayRecord(-1, date, 0, 0, "00:00", "00:00", "", 0, 0, 0, 0);
+        })
+        setWeeklyRecordData(fillData);
+        setWeeklyCount(data.filter(r => r.mood > 0 || r.energy > 0).length);
+
+        //이번주 평균 감정 기록 계산
+        let sumMood: number = 0;
+        let sumEnergy: number = 0;
+        let count: number = 0;
+        let AvgMood: number = 0;
+        let AvgEnergy: number = 0;
+
+        fillData.forEach(record => {
+          if (record.mood > 0 || record.energy > 0) {
+            sumMood += record.mood;
+            sumEnergy += record.energy;
+            count += 1;
+          }
         })
 
-        setWeeklyRecordData(fillData);
-        setWeeklyCount(data.length);
+        if (count > 0) {
+          AvgMood = sumMood / count;
+          AvgEnergy = sumEnergy / count;
+        }
+
+        //이번주 평균 감정 기록 저장
+        setWeeklyAvgMood(AvgMood);
+        setWeeklyAvgEnergy(AvgEnergy);
 
         const moodData = fillData.map(record => {
           return record.mood;
@@ -264,6 +333,8 @@ export default function ChartScreen() {
             moodData={weeklyMoodChartData}
             energyData={weeklyEnergyChartData}
             count={weeklyCount}
+            avgMood={weeklyAvgMood}
+            avgEnergy={weeklyAvgEnergy}
           />
           :
           <ChartMonthlyView
@@ -271,6 +342,8 @@ export default function ChartScreen() {
             moodData={monthlyMoodChartData}
             energyData={monthlyEnergyChartData}
             count={monthlyCount}
+            avgMood={monthlyAvgMood}
+            avgEnergy={monthlyAvgEnergy}
             numOfDays={numMonthly}
           />
         }

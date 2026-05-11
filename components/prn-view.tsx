@@ -22,8 +22,8 @@ export const PRNView = ({ idDayRecord }: { idDayRecord: number }) => {
     }
 
     // PRN 종류 배열 데이터
-    const [prnData, setPrnData] = useState<PRN[]>([{ idPRN: 1, name: '비상약' }]); // PRN데이터 리스트
-    const [ prnTakingData, setPrnTakingData ] = useState<PRNTaking[]>([]); // PRN 복용 데이터 리스트    
+    const [prnData, setPrnData] = useState<PRN[]>([{ idPRN: 1, name: '필요시약' }]); // PRN데이터 리스트
+    const [prnTakingData, setPrnTakingData] = useState<PRNTaking[]>([]); // PRN 복용 데이터 리스트    
     const [prnDropdownValue, setPrnDropdownValue] = useState<number>(prnData[0]?.idPRN || -1); // PRN 종류 선택값 (드롭다운에서 바뀌는 값) // prnData가 비어있을 때 에러남
     const [prnDropdownCurValue, setPrnDropdownCurValue] = useState<number>(prnData[0]?.idPRN || -1); // PRN 종류 선택값 (현재 선택되어 창에 표시되고 있는 값)
     const [prnInputText, setPrnInputText] = useState(''); // PRN 종류 입력값 (드롭다운 추가에서 입력하는 값)
@@ -39,7 +39,7 @@ export const PRNView = ({ idDayRecord }: { idDayRecord: number }) => {
         loadPRNtakingList();
     }, [idDayRecord]);
 
-    const  loadPRNList = async () => {
+    const loadPRNList = async () => {
         const dbPRNList = await getAllPRNs();
         setPrnData(dbPRNList);
     }
@@ -76,7 +76,7 @@ export const PRNView = ({ idDayRecord }: { idDayRecord: number }) => {
             setPrnDropdownValue(-1);
             setPrnDropdownCurValue(-1);
         }
-        
+
     }
 
     const handlePrnOptionEdit = (id: number) => {
@@ -88,7 +88,7 @@ export const PRNView = ({ idDayRecord }: { idDayRecord: number }) => {
         else {
             setPrnOptionIsEditing(true);
             setPrnOptionEditingId(id);
-            setPrnOptionEditingText(prnData.find((item) => item.idPRN=== id)?.name || '');
+            setPrnOptionEditingText(prnData.find((item) => item.idPRN === id)?.name || '');
         }
     }
 
@@ -123,15 +123,15 @@ export const PRNView = ({ idDayRecord }: { idDayRecord: number }) => {
 
     const prnTakingAddPress = (id: number) => {
         if (id === -1) {
-            Alert.alert("알림", '비상약을 선택해주세요.');
+            Alert.alert("알림", '필요시약을 선택해주세요.');
             return;
         }
         async function createNewPrnTaking() {
-            const krTime = prnTime.toLocaleTimeString('ko-KR', { 
-                hour: '2-digit', 
-                minute: '2-digit', 
+            const krTime = prnTime.toLocaleTimeString('ko-KR', {
+                hour: '2-digit',
+                minute: '2-digit',
                 hour12: false // 24시간 형식 (오후 2시 -> 14:00)
-                });
+            });
             const newPrnTaking = new PRNTaking(-1, id, idDayRecord, krTime);
             const newPrnTakingId = await addPRNTaking(newPrnTaking);
             if (newPrnTakingId !== -1) {
@@ -153,7 +153,7 @@ export const PRNView = ({ idDayRecord }: { idDayRecord: number }) => {
     return (
         <View style={styles.container}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <ThemedText>PRN</ThemedText>
+                <ThemedText>필요시 복용 약</ThemedText>
                 <Pressable onPress={prnSettingPress}>
                     <Ionicons name="settings-outline" size={20} color="gray" />
                 </Pressable>
@@ -222,10 +222,10 @@ export const PRNView = ({ idDayRecord }: { idDayRecord: number }) => {
                 style={{ justifyContent: 'center', alignItems: 'center', margin: 0 }}
             >
                 <View style={styles.modalContainer}>
-                    <ThemedText style={styles.modalTitle}>비상약 종류</ThemedText>
+                    <ThemedText style={styles.modalTitle}>필요시약 종류</ThemedText>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <TextInput
-                            placeholder="비상약 종류"
+                            placeholder="필요시약 종류를 입력하세요"
                             value={prnInputText}
                             onChangeText={setPrnInputText}
                             style={styles.modalInput}

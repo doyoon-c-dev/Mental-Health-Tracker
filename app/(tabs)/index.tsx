@@ -7,6 +7,7 @@ import { styles } from 'components/ui/style';
 import { Fonts } from 'constants/theme';
 import { format, parse } from 'date-fns';
 import Checkbox from 'expo-checkbox';
+import { useFocusEffect } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -41,15 +42,15 @@ export default function RecordScreen() {
     if (dayRecordDataDB !== -1) {
       setDayRecord(dayRecordDataDB);
     }
-    else { console.error("하루 기록 데이터 로드 실패");  }
-    
+    else { console.error("하루 기록 데이터 로드 실패"); }
+
     return dayRecordDataDB;
   }
 
   //하루기록 데이터 저장
-  const saveCurrentData = async() => {
-        await updateRegularMedicineSetting(medicineSetting, dayRecord.date);
-        await updateDayRecord(dayRecord);
+  const saveCurrentData = async () => {
+    await updateRegularMedicineSetting(medicineSetting, dayRecord.date);
+    await updateDayRecord(dayRecord);
   }
 
   // 앱 시작 시 오늘 날짜로 데이터 로드
@@ -62,12 +63,28 @@ export default function RecordScreen() {
     }
 
     loadingData();
-    
+
 
     return () => {
       saveCurrentData();
     }
   }, []);
+
+  useFocusEffect(() => {
+    {/*const dateString = new Date().toISOString().split('T')[0];
+    async function loadingData() {
+      await updateRegularMedicineSetting(medicineSetting, dateString);
+      await loadingRegularMedicineSetting(dateString);
+      await loadingDayRecord(dateString);
+    }
+
+    loadingData();
+    */}
+
+    return () => {
+      saveCurrentData();
+    }
+  });
 
   // 정기 약 복용 설정 바뀔 때마다 저장
   useEffect(() => {
@@ -420,7 +437,7 @@ export default function RecordScreen() {
               <View style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
                 <ThemedText style={{ fontSize: 16, fontFamily: Fonts.rounded, marginHorizontal: 5, marginTop: 15 }}>기력</ThemedText>
                 <Slider
-                  style={{ width: "70%", height: 40, marginTop: 15}}
+                  style={{ width: "70%", height: 40, marginTop: 15 }}
                   minimumValue={1}
                   maximumValue={5}
                   step={1}
@@ -464,7 +481,7 @@ export default function RecordScreen() {
               </View>
             </View>
             {/* PRN 복용 */}
-            <PRNView idDayRecord={dayRecord.id}/>
+            <PRNView idDayRecord={dayRecord.id} />
 
             {/* 기록 및 수면 */}
             <ThemedView style={styles.container}>

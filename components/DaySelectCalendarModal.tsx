@@ -2,7 +2,7 @@ import { Calendar } from "react-native-calendars";
 import Modal from "react-native-modal";
 import { ThemedView } from "./themed-view";
 import { styles } from "./ui/style";
-import { Fonts } from "@/constants/theme";
+import { Fonts } from "../constants/theme";
 import { Pressable } from "react-native";
 import { ThemedText } from "./themed-text";
 import { useState } from "react";

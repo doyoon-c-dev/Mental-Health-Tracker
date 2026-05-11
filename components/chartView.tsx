@@ -1,10 +1,10 @@
-import { ThemedView } from "@/components/themed-view";
-import { ThemedText } from "@/components/themed-text";
-import { styles } from "@/components/ui/style";
+import { ThemedView } from "../components/themed-view";
+import { ThemedText } from "../components/themed-text";
+import { styles } from "../components/ui/style";
 import { LineChart } from 'react-native-chart-kit';
 import { View } from "react-native";
-import { Fonts } from '@/constants/theme';
-import { DayRecord } from "@/src/repositories/recordRepo";
+import { Fonts } from "../constants/theme";
+import { DayRecord } from "../src/repositories/recordRepo";
 
 interface moodEmoji {
   mood: number;
@@ -21,14 +21,14 @@ const moodEmojiList: moodEmoji[] = [
   { mood: 5, emoji: "😀", color: "#000000ff" }
 ]
 
-export const ChartWeeklyView = ({ moodData, energyData, count }: { moodData: number[], energyData: number[], count: number }) => {
+export const ChartWeeklyView = ({ moodData, energyData, count, avgMood, avgEnergy }: { moodData: number[], energyData: number[], count: number, avgMood: number, avgEnergy: number }) => {
   return (
 
     <ThemedView style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', gap: 5 }}>
       <ThemedView style={styles.container}>
         <ThemedView>
           <ThemedText>이번 주 내 기분은</ThemedText>
-          <ThemedText>4.5점 입니다</ThemedText>
+          <ThemedText>{avgMood}점 입니다</ThemedText>
         </ThemedView>
         <ThemedView>
           <ThemedText>기분 분포</ThemedText>
@@ -84,6 +84,10 @@ export const ChartWeeklyView = ({ moodData, energyData, count }: { moodData: num
       <ThemedView style={styles.container}>
         <ThemedView style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', gap: 5, marginTop: 15 }}>
           <ThemedText style={{ fontSize: 16, fontFamily: Fonts.rounded }}>기력 추이</ThemedText>
+          <ThemedView>
+            <ThemedText>이번 주 평균 기력은</ThemedText>
+            <ThemedText>{avgEnergy}점 입니다</ThemedText>
+          </ThemedView>
           <View style={{ alignItems: 'center' }}>
             {energyData.length > 0 && (
               <LineChart
@@ -137,13 +141,13 @@ export const ChartWeeklyView = ({ moodData, energyData, count }: { moodData: num
 
 
 
-export const ChartMonthlyView = ({ recordData, moodData, energyData, count, numOfDays }: { recordData: DayRecord[], moodData: number[], energyData: number[], count: number, numOfDays: number }) => {
+export const ChartMonthlyView = ({ recordData, moodData, energyData, count, avgMood, avgEnergy, numOfDays }: { recordData: DayRecord[], moodData: number[], energyData: number[], count: number, avgMood: number, avgEnergy: number, numOfDays: number }) => {
   return (
     <ThemedView style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', gap: 5 }}>
       <ThemedView style={styles.container}>
         <ThemedView>
-          <ThemedText>이번 주 내 기분은</ThemedText>
-          <ThemedText>4.5점 입니다</ThemedText>
+          <ThemedText>이번 달 내 기분은</ThemedText>
+          <ThemedText>{avgMood}점 입니다</ThemedText>
         </ThemedView>
         <ThemedText>기분 분포</ThemedText>
         <ThemedView style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
@@ -197,6 +201,10 @@ export const ChartMonthlyView = ({ recordData, moodData, energyData, count, numO
       <ThemedView style={styles.container}>
         <ThemedView style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', gap: 5, marginTop: 15 }}>
           <ThemedText style={{ fontSize: 16, fontFamily: Fonts.rounded }}>기력 추이</ThemedText>
+          <ThemedView>
+            <ThemedText>이번 달 평균 기력은</ThemedText>
+            <ThemedText>{avgEnergy}점 입니다</ThemedText>
+          </ThemedView>
           <View style={{ alignItems: 'center' }}>
             {energyData.length > 0 && (
               <LineChart
