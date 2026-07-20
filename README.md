@@ -1,21 +1,18 @@
 # Mental-Health-Tracker
-A frontend module for recording daily mood, energy, sleep, and medication, and visualizing changes over time.
-## 📌 Mental-Health-Tracker
 
-A frontend module for recording daily mood, energy, sleep, and medication,
-and visualizing changes over time.
+## 📌 Mental-Health-Tracker
+하루의 기분, 기력, 수면, 복약 여부 등을 기록하고 변화를 시각화하는 프론트엔드 모듈입니다.
 
 ## 🧩 Context
-
-This work was part of a team project.  
-I was responsible for implementing the logging interface and statistics view based on the provided design.
+팀 프로젝트의 일부입니다.
+저는 UIUX 디자인과 기획을 제외한 전반적인 프론트엔드 개발을 담당하였습니다.
 
 ## ✨ My Contributions
 
 ### ✅ Implemented
-- Daily log input form for mood, energy, sleep, and medication
-- State management for handling and updating user input
-- Statistics page for visualizing mood and energy trends
+- 기분, 기력, 수면, 복약여부 기록 input form
+- user input에 따른 State 변경
+- 통계페이지에서 기분과 기력의 변화를 시각화
 
 ## 🛠 Tech Stack
 - React Native
@@ -26,13 +23,13 @@ I was responsible for implementing the logging interface and statistics view bas
 - npx expo start
 
 ## 💡 What I Focused On
-- Implementing user flows based on predefined UI
-- Structuring and managing state for daily records
-- Representing user data in a clear and readable way through charts
+- 미리 정의된 UI를 기반으로 사용자 흐름 구성
+- 하루 기록을 위한 State 구조화 및 관리
+- 사용자 데이터 차트를 통해 명확하고 읽기 쉬운 방식으로 표
 
 ## 🚧 Limitations
-- No backend integration
-- No persistent storage (data handled in client state only)
+- 백엔드 부재
+- 영구 storage 부재(클라이언트 stoarge에서만 처리)
 
 ## 🔗 Planned Backend Integration
 - POST /logs → save daily records
